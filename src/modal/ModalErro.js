@@ -6,7 +6,9 @@ import { useNavigation } from '@react-navigation/native';
 
 export default props => {
     const navigation = useNavigation();
-    const acoes = props.data.params.item.acoes;
+    const acoes = props.data.route.params.item.acoes;
+    const resgate = props.data.resgate;
+    console.log(props.data.resgate)
 
     function dePara(item) {
         if (item === "Banco do Brasil (BBAS3)") return 'BBAS3';
@@ -21,7 +23,7 @@ export default props => {
 
     function percentual(item) {
         let percentual = item;
-        let saldoTotal = props.data.params.item.saldoTotal;
+        let saldoTotal = props.data.route.params.item.saldoTotal;
         let saldoAcumulado = 0;
         saldoAcumulado = percentual / 100 * saldoTotal;
 
@@ -34,11 +36,11 @@ export default props => {
         <View style={styles.container}>
             <View style={styles.modal}>
                 <View >
-                    <Text  style={styles.text}>DADOS INVÁLIDOS</Text>
+                    <Text style={styles.text}>DADOS INVÁLIDOS</Text>
                 </View>
 
                 <View style={styles.corpo}>
-                    <Text style={styles.text} > Vocẽ preencheu um ou mais campos com valor acima do permitido:</Text>
+                    <Text style={styles.text} > Você preencheu um ou mais campos com valor acima do permitido:</Text>
                 </View>
 
 
@@ -48,9 +50,10 @@ export default props => {
                         return (
                             <View style={styles.corpo}>
                                 <View style={styles.corpo1}>
-                                    <Text style={styles.text} >{dePara(item.nome)}</Text>
-                                    <Text style={styles.text} >: Valor máximo de </Text>
-                                    <Text style={styles.text} >{percentual(item.percentual)}</Text>
+                                    {resgate[item.id] && resgate[item.id].erro &&
+                                        <Text style={styles.text}>{dePara(resgate[item.id].nome)}: Valor Máximo de {percentual(item.percentual)} </Text>
+
+                                    }
                                 </View>
                             </View>
                         )
@@ -86,23 +89,17 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         justifyContent: 'flex-end',
         fontSize: 20
-    },    
-    teste: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-
     },
     corpo: {
         flexDirection: 'column',
         justifyContent: 'flex-end',
         margin: 5
-             
+
     },
-    corpo1:{
+    corpo1: {
         flexDirection: 'row',
         padding: 10,
-        marginBottom: 5,        
+        marginBottom: 5,
         marginBottom: 1,
     }
 });

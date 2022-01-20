@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Button, FlatList, TextInput, ScrollView, Modal, Alert } from 'react-native';
+import MaskInput, { Masks } from 'react-native-mask-input';
 import ModalConfirmacao from '../modal/ModalConfirmacao';
 import ModalErro from '../modal/ModalErro';
 
@@ -7,9 +8,10 @@ import ModalErro from '../modal/ModalErro';
 
 export default function Resgate({ route }) {
     const [resgate, setResgate] = useState([]);
-    const [totalResgate, setTotalResgate] = useState('0');
-    const [modalConfirmacao, setModalConfirmacao]= useState(false);
-    const [modalErro, setModalErro]= useState(false);
+    const [totalResgate, setTotalResgate] = useState('');
+    const [modalConfirmacao, setModalConfirmacao] = useState(false);
+    const [modalErro, setModalErro] = useState(false);
+    const [teste, setTeste] = useState(false)
 
     const acoes = route.params?.item.acoes;
 
@@ -30,8 +32,8 @@ export default function Resgate({ route }) {
         let saldoTotal = route.params?.item.saldoTotal;
         let saldoAcumulado = 0;
         saldoAcumulado = percentual / 100 * saldoTotal;
-        
-        var monetario = saldoAcumulado.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})
+
+        var monetario = saldoAcumulado
         return monetario
     }
 
@@ -39,40 +41,71 @@ export default function Resgate({ route }) {
 
 
     function valorResgate(texto, i) {
-        const array = resgate;
+        let limparDados = texto.replace('R$', '').replace('.', '').replace(' ', '');
+        let limpaMais = limparDados.replace(',', '.')
+        const array = [...resgate];
         array[i.id] = {
             ...i,
-            valorResgatar: texto
+            valorResgatar: limpaMais,
+            erro: limpaMais > percentual(i.percentual) ? true : false
         }
-        setResgate(array)
-        somarValor();
-        
+
+        setResgate(array);
+        somarValor(array);
+
+
 
     }
 
 
-    function somarValor(){
-      
-       let total = resgate.reduce((total,valor) => total + parseInt(valor.valorResgatar),0)
-       setTotalResgate(total);
+    function somarValor(array) {
+        console.log(array)
+
+
+        // let total = array.reduce((total, valor) => total += (parseFloat(valor.valorResgatar) ? parseFloat(valor.valorResgatar) : 0), 0)
+        // console.log('total', total)
+        let total = 0;
+        for (let x in array) {
+            const xpto = array[x]
+            console.log('aa', xpto)
+            if (xpto && xpto.valorResgatar) {
+                total += parseFloat(xpto.valorResgatar)
+
+            }
+
+        }
+        console.log('total', total)
+
+
+
+
+
+        setTotalResgate(total)
+
 
     }
 
-    function abrirModal(){
-        if (totalResgate === '0' ){
+    function abrirModal() {
+
+        for (let x in resgate) {
+            const xpto = resgate[x]
+            if (xpto && xpto.erro === true) {
+                setModalErro(true)
+                return;
+            }
+
+        }
+        if (totalResgate === '') {
             alert('Selecione um valor valido.')
             return;
+        } else {
+            setModalConfirmacao(true)
         }
-        if(totalResgate > route.params?.item.saldoTotal){
-            setModalErro(true)
-        }else{
-            setModalConfirmacao(true) 
-        }
-        
+
 
     }
 
-    function fecharModal(){
+    function fecharModal() {
         setModalErro(false)
     }
 
@@ -89,20 +122,28 @@ export default function Resgate({ route }) {
                 </View>
                 <View style={styles.corpo}>
                     <Text style={styles.texto}>Saldo acumulado</Text>
-                    <Text style={styles.texto2}>{percentual(item.percentual)}</Text>
+                    <Text style={styles.texto2}>{percentual(item.percentual).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</Text>
                 </View>
                 <View style={styles.corpo}>
-                    <TextInput
+                    <MaskInput
                         style={styles.input}
                         placeholder='Valor a resgatar'
                         keyboardType="numeric"
-                        
-                        onChangeText={(texto => valorResgate(texto, item))}
+                        mask={Masks.BRL_CURRENCY}
+                        value={resgate[item.id] && resgate[item.id].valorResgatar || ''}
+
+
+                        onChangeText={(texto) => valorResgate(texto, item)}
                     />
-                    
+
                 </View>
-                <Modal transparent={true} animationType='slide' visible={modalErro}>{<ModalErro data={route} fechar={fecharModal}/>}</Modal>
-                <Modal transparent={true} animationType='slide' visible={modalConfirmacao}>{<ModalConfirmacao/>}</Modal> 
+                {resgate[item.id] && resgate[item.id].erro &&
+                    <View style={styles.corpo}>
+                        <Text style={styles.textErro}>Valor não pode ser maior que {percentual(item.percentual).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</Text>
+                    </View>
+                }
+                <Modal transparent={true} animationType='slide' visible={modalErro}>{<ModalErro data={{ route, resgate }} fechar={fecharModal} />}</Modal>
+                <Modal transparent={true} animationType='slide' visible={modalConfirmacao}>{<ModalConfirmacao />}</Modal>
             </View>
 
 
@@ -113,7 +154,7 @@ export default function Resgate({ route }) {
 
     return (
         <View style={styles.container}>
-            <ScrollView horizontal={false} >
+            
                 <View style={styles.corpo2}>
                     <Text style={styles.texto2}>Dados do investimento</Text>
                 </View>
@@ -123,8 +164,8 @@ export default function Resgate({ route }) {
                     <Text style={styles.texto2}>{route.params?.item.nome}</Text>
                 </View>
                 <View style={styles.corpo}>
-                    <Text style={styles.texto}>Saldo Total Disponivel</Text>
-                    <Text style={styles.texto2}>{route.params?.item.saldoTotal.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})}</Text>
+                    <Text style={styles.texto}>Saldo Total Disponível</Text>
+                    <Text style={styles.texto2}>{route.params?.item.saldoTotal.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</Text>
                 </View>
                 <View style={styles.corpo2}>
                     <Text style={styles.texto2}>Resgate do Seu Jeito</Text>
@@ -132,15 +173,15 @@ export default function Resgate({ route }) {
                 <FlatList
                     data={acoes}
                     renderItem={acoesList}
-                    scrollEnabled
+                    
                 />
                 <View style={styles.corpo2}>
                     <Text style={styles.texto2}>Valor total a resgatar</Text>
-                    <Text style={styles.texto2}>{totalResgate.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'})}</Text>
+                    <Text style={styles.texto2}>{totalResgate.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</Text>
                 </View>
 
                 <Button title='CONFIRMAR RESGATE' style={styles.button} onPress={abrirModal} />
-            </ScrollView>
+            
         </View>
     )
 }
@@ -175,6 +216,11 @@ const styles = StyleSheet.create({
     input: {
         flex: 1,
         fontWeight: 'bold'
+    },
+    textErro: {
+        color: 'red',
+        marginLeft: 13
+
     }
 
 
