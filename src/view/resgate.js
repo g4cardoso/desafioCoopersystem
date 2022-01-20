@@ -11,7 +11,6 @@ export default function Resgate({ route }) {
     const [totalResgate, setTotalResgate] = useState('');
     const [modalConfirmacao, setModalConfirmacao] = useState(false);
     const [modalErro, setModalErro] = useState(false);
-    const [teste, setTeste] = useState(false)
 
     const acoes = route.params?.item.acoes;
 
@@ -41,13 +40,13 @@ export default function Resgate({ route }) {
 
 
     function valorResgate(texto, i) {
-        let limparDados = texto.replace('R$', '').replace('.', '').replace(' ', '');
-        let limpaMais = limparDados.replace(',', '.')
+        let formatar = texto.replace('R$', '').replace('.', '').replace(' ', '');
+        let formatarMoeda = formatar.replace(',', '.')
         const array = [...resgate];
         array[i.id] = {
             ...i,
-            valorResgatar: limpaMais,
-            erro: limpaMais > percentual(i.percentual) ? true : false
+            valorResgatar: formatarMoeda,
+            erro: formatarMoeda > percentual(i.percentual) ? true : false
         }
 
         setResgate(array);
@@ -59,30 +58,14 @@ export default function Resgate({ route }) {
 
 
     function somarValor(array) {
-        console.log(array)
-
-
-        // let total = array.reduce((total, valor) => total += (parseFloat(valor.valorResgatar) ? parseFloat(valor.valorResgatar) : 0), 0)
-        // console.log('total', total)
         let total = 0;
         for (let x in array) {
             const xpto = array[x]
-            console.log('aa', xpto)
             if (xpto && xpto.valorResgatar) {
                 total += parseFloat(xpto.valorResgatar)
-
             }
-
         }
-        console.log('total', total)
-
-
-
-
-
         setTotalResgate(total)
-
-
     }
 
     function abrirModal() {

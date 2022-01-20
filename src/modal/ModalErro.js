@@ -8,7 +8,6 @@ export default props => {
     const navigation = useNavigation();
     const acoes = props.data.route.params.item.acoes;
     const resgate = props.data.resgate;
-    console.log(props.data.resgate)
 
     function dePara(item) {
         if (item === "Banco do Brasil (BBAS3)") return 'BBAS3';
@@ -88,7 +87,7 @@ const styles = StyleSheet.create({
     text: {
         textAlign: 'center',
         justifyContent: 'flex-end',
-        fontSize: 20
+        fontSize: 18
     },
     corpo: {
         flexDirection: 'column',

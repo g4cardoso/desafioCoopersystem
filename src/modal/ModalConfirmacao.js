@@ -11,7 +11,7 @@ export default props => {
     return (
         <View style={styles.container}>
             <View style={styles.modal}>
-                <View style={styles.teste}>
+                <View style={styles.corpo}>
                     <Text style={styles.text}>O valor solicitado estará em sua conta em até 5 dias úteis!</Text>
                 </View>
                 <View style={styles.button}>
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
 
     },
-    teste:{
+    corpo:{
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
